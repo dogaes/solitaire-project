@@ -35,14 +35,15 @@ class ManualGame(Game):
 
 class AutomatedGame(Game):
     def make_auto_move(self):
-        moves = self.board.get_all_valid_moves()
-        if moves:
-            move = random.choice(moves)
-            self.board.apply_move(*move)
-
+        valid_moves = self.board.get_all_valid_moves()
+        if valid_moves:
+            move = random.choice(valid_moves)
+            self.board.apply_move(move[0], move[1])
+    
     def play(self):
         while not self.is_game_over():
             self.display()
             self.make_auto_move()
+        
 
         print("Automated Game Over!")

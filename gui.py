@@ -11,15 +11,22 @@ class SolitaireGUI:
         self.game = None
         self.buttons = []
         self.selected = None
+        self.mode = None
+        self.game_over_timer = None
+        self.autoplay_timer = None
         self.setup_menu(mode)
     
     def setup_menu(self, mode = None):
         self.game = None
         self.board = None
         self.selected = None
-        if hasattr(self, '_game_over_timer') and self.game_over_timer:
+        self.mode = None
+        if self.game_over_timer:
             self.root.after_cancel(self.game_over_timer)
             self.game_over_timer = None
+        if self.autoplay_timer:
+            self.root.after_cancel(self.autoplay_timer)
+            self.autoplay_timer = None
         self.clear_window()
 
         tk.Label(self.root, text="Choose Board Size:").pack()
@@ -45,6 +52,9 @@ class SolitaireGUI:
         self.create_board()
         self.update_display()
         self.add_controls()
+
+        if mode == "Automated":
+            self._autoplay_timer = self.root.after(1000, self.autoplay)  # start autoplay after 1 second
 
     def choose_board_type(self, size):
         self.clear_window()
@@ -93,16 +103,25 @@ class SolitaireGUI:
             self.show_game_over()
     
     def autoplay(self):
-        if self.game is None or self.board is None:
+        if self.game is None or self.board is None or self.mode is None:
             return
+
         if self.mode != "Automated":
             popup = tk.Toplevel(self.root)
             popup.title("Not available")
             popup.resizable(False, False)
+
             tk.Label(popup, text="Autoplay is only available in Automated mode.").pack(padx=20, pady=20)
             tk.Button(popup, text="OK", command=popup.destroy).pack(pady=10)
             popup.grab_set() # make it modal
             return
+        
+        if not self.game.is_game_over():
+            self.game.make_auto_move()
+            self.update_display()
+            self._autoplay_timer = self.root.after(1000, self.autoplay)  # schedule next move after 1 second
+        else:
+            self.show_game_over()
 
     def on_click(self, r, c):
         if self.game is None or self.mode is None:
