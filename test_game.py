@@ -13,6 +13,7 @@ class TestManualGame(unittest.TestCase):
         self.assertEqual(board.grid[3][1], 0) # peg removed from start
         self.assertEqual(board.grid[3][2], 0) # jumped peg removed
         self.assertEqual(board.grid[3][3], 1) # peg moved to end
+    print("ManualGame tests passed")
 
 class TestAutomatedGame(unittest.TestCase):
     def test_auto_move(self):
@@ -21,6 +22,7 @@ class TestAutomatedGame(unittest.TestCase):
 
         game.make_auto_move()
         self.assertTrue(True)
+    print("AutomatedGame tests passed")
 
 if __name__ == "__main__":
     unittest.main()

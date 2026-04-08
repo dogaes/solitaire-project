@@ -147,7 +147,7 @@ class SolitaireGUI:
         tk.Label(self.root, text=f"Pegs remaining: {pegs}", font=("Arial", 18)).pack(pady=10)
         tk.Label(self.root, text="No more valid moves", font=("Arial", 14)).pack(pady=10)
         tk.Button(self.root, text="Back to Menu", command=self.setup_menu).pack(pady=10)
-        self._game_over_timer = self.root.efter(5000, self.setup_menu)  # auto-return to menu after 5 seconds
+        self._game_over_timer = self.root.after(5000, self.setup_menu)  # auto-return to menu after 5 seconds
     
     def clear_window(self):
         for widget in self.root.winfo_children():
