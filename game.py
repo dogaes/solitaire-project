@@ -4,8 +4,9 @@ from board import Board, EnglishBoard, HexBoard, DiamondBoard
 
 
 class Game(ABC): # absract base class
-    def __init__(self, board):
+    def __init__(self, board, recorder=None):
         self.board = board
+        self.recorder = recorder       # optional game recorder instance
 
     def is_game_over(self):
         return not self.board.has_valid_moves()
@@ -21,8 +22,12 @@ class ManualGame(Game):
     def make_move(self, start, end):
         if self.board.is_valid_move(start, end):
             self.board.apply_move(start, end)
+            if self.recorder:
+                self.recorder.log_move(start, end)
+            return True
         else:
             print("Invalid move. Try again.")
+            return False
         
     def play(self):
         while not self.is_game_over():
@@ -35,10 +40,12 @@ class ManualGame(Game):
 
 class AutomatedGame(Game):
     def make_auto_move(self):
-        valid_moves = self.board.get_all_valid_moves()
-        if valid_moves:
-            move = random.choice(valid_moves)
-            self.board.apply_move(move[0], move[1])
+        moves = self.board.get_all_valid_moves()
+        if moves:
+            move = random.choice(moves)
+            self.board.apply_move(*move)
+            if self.recorder:
+                self.recorder.log_move(move[0], move[1])
     
     def play(self):
         while not self.is_game_over():
