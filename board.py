@@ -41,6 +41,9 @@ class Board:
         return False
     
     def apply_move(self, start, end):
+        if not self.is_valid_move(start, end):
+            raise ValueError(f"Invalid move from {start} to {end}") 
+    
         r1, c1 = start
         r2, c2 = end
 
@@ -70,7 +73,6 @@ class Board:
         return len(self.get_all_valid_moves()) > 0
     
     def randomize(self):
-        import random
         for r in range(self.size):
             for c in range(self.size):
                 if self.grid[r][c] != -1:  # only randomize valid positions
@@ -104,13 +106,13 @@ class HexBoard(Board):
 
         for r in range(self.size):
             for c in range(self.size):
-                t1 = r + c < cut
-                t2 = r + (self.size - 1 - c) < cut
-                t3 = (self.size - 1 - r) + c < cut
-                t4 = (self.size - 1 - r) + (self.size - 1 - c) < cut
-                if not (t1 or t2 or t3 or t4):
+                top_left_corner     = r + c < cut
+                top_right_corner    = r + (self.size - 1 - c) < cut
+                bottom_left_corner  = (self.size - 1 - r) + c < cut
+                bottom_right_corner = (self.size - 1 - r) + (self.size - 1 - c) < cut
+                if not (top_left_corner or top_right_corner or bottom_left_corner or bottom_right_corner):
                     board[r][c] = 1
-
+                    
         board[mid][mid] = 0
         return board
 

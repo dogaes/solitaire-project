@@ -91,13 +91,13 @@ class SolitaireGUI:
     def start_game(self, board_type, size, mode, replay=False):
         self.mode = mode
 
-        if board_type == "English":
-            self.board = EnglishBoard(size)
-        elif board_type == "Hexagon":
-            self.board = HexBoard(size)
-        elif board_type == "Diamond":
-            self.board = DiamondBoard(size)
-
+        BOARD_CLASSES = {
+            "English": EnglishBoard,
+            "Hexagon": HexBoard,
+            "Diamond": DiamondBoard
+        }
+        self.board = BOARD_CLASSES[board_type](size)
+        
         # start recording if enabled and not replaying
         if self.record_var.get() and not replay:
             self.recorder.start(board_type, size, self.board.grid)
@@ -273,6 +273,9 @@ class SolitaireGUI:
             for c in range(self.board.size):
                 self.board.grid[r][c] = init["grid"][r][c]
         self.update_display()
+        self.replay_controller = ReplayController(
+            self.board, self.replayer, self.update_display, self.replay_status
+        )
         self.add_replay_controls()
 
     def add_replay_controls(self):
@@ -285,26 +288,27 @@ class SolitaireGUI:
         self.replay_status = tk.Label(frame, text="Replay mode - press Next to step")
         self.replay_status.pack(side=tk.LEFT, padx=8)
 
-        tk.Button(frame, text="Next", command=self.replay_step).pack(side=tk.LEFT, padx=4)
+        tk.Button(frame, text="Next", command=self.replay_controller.step).pack(side=tk.LEFT, padx=4)
         tk.Button(frame, text="Auto Replay", command=self.replay_auto).pack(side=tk.LEFT, padx=4)
         tk.Button(frame, text="Menu", command=self.replay_menu).pack(side=tk.LEFT, padx=4)
 
-    def replay_step(self):
-        if self.replayer is None:
-            return
-        if not self.replayer.has_next():
-            if self.replay_status:
-                self.replay_status.config(text="Replay complete")
-            return
+class ReplayController:
+    def __init__(self, board, replayer, update_display, replay_status):
+        self.board = board
+        self.replayer = replayer
+        self.update_display = update_display
+        self.replay_status = replay_status
 
+    def step(self):
+        if not self.replayer.has_next():
+            self.replay_status.config(text="Replay complete")
+            return
         event = self.replayer.next_event()
         if event["type"] == "move":
             start = tuple(event["data"]["start"])
             end = tuple(event["data"]["end"])
             self.board.apply_move(start, end)
             self.update_display()
-            if self.game.is_game_over() and self.replay_status:
-                self.replay_status.config(text="Replay complete, game over")
         elif event["type"] == "randomize":
             grid = event["data"]["grid"]
             for r in range(self.board.size):
@@ -312,21 +316,6 @@ class SolitaireGUI:
                     self.board.grid[r][c] = grid[r][c]
             self.update_display()
             self.replay_status.config(text="Randomize applied")
-
-        if not self.replayer.has_next() and self.replay_status:
-            self.replay_status.config(text="Replay complete")
-
-    def replay_auto(self):
-        if self.replayer is None or not self.replayer.has_next():
-            return
-        self.replay_step()
-        if self.replayer.has_next():
-            self._autoplay_timer = self.root.after(1000, self.replay_auto)
-
-    def replay_menu(self):
-        self.replayer = None
-        self.setup_menu()
-
 
 def run_gui():
     root = tk.Tk()

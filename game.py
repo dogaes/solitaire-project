@@ -32,7 +32,7 @@ class ManualGame(Game):
     def play(self):
         while not self.is_game_over():
             self.display()
-            move = input("Enter over (r1 c1 r2 c2): ").split()
+            move = input("Enter move (r1 c1 r2 c2): ").split()
             r1, c1, r2, c2 = map(int, move)
             self.make_move((r1, c1), (r2, c2))
 
